@@ -3,18 +3,25 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Navbar() {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
+  const firstName = localStorage.getItem("first_name");
+  const lastName = localStorage.getItem("last_name");
   const navigate = useNavigate();
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    localStorage.clear();
     navigate("/login");
   };
 
   return (
     <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
       <h1 className="font-bold text-lg">Kelpie</h1>
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-center">
+        {token && (
+          <span className="italic">
+            Hola, {firstName} {lastName}
+          </span>
+        )}
+
         {!token && <Link to="/login">Login</Link>}
 
         {token && role === "admin" && (
