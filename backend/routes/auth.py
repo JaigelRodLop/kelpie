@@ -1,12 +1,20 @@
-from datetime import datetime, timedelta, timezone
-from jose import jwt
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import Annotated
+from backend.schemas.auth import Token
+from backend.schemas.user import UserCreate, UserRead
+from backend.db.database import get_db
 
-SECRET_KEY = "supersecretkey"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+router = APIRouter(prefix="/auth", tags=["auth"])
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+DBSession = Annotated[Session, Depends(get_db)]
+
+@router.post("/login", response_model=Token)
+def login(user: UserCreate, db: DBSession):
+    # lógica de autenticación
+    return {"access_token": "fake-token", "token_type": "bearer"}
+
+@router.post("/register", response_model=UserRead)
+def register(user: UserCreate, db: DBSession):
+    # lógica de registro
+    return {"id": 1, "email": user.email, "is_active": True, "created_at": "2026-06-21"}
