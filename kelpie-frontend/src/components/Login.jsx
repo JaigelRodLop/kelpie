@@ -1,39 +1,54 @@
-import { useState } from "react";
-import { ENDPOINTS } from "../config";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
+import ENDPOINTS from "../config";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError(null);
+
     try {
-      const res = await fetch(ENDPOINTS.auth.login, {
+      const response = await fetch(`${ENDPOINTS.auth.login}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) throw new Error("Credenciales inválidas");
+      if (!response.ok) throw new Error("Credenciales inválidas");
 
-      const data = await res.json();
+      const data = await response.json();
 
-      // Guardar datos en localStorage
+      setUser({
+        token: data.access_token,
+        role: data.role,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        email: email,
+      });
+
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("role", data.role);
-      localStorage.setItem("first_name", data.first_name);
-      localStorage.setItem("last_name", data.last_name);
+      localStorage.setItem("firstName", data.first_name);
+      localStorage.setItem("lastName", data.last_name);
+      localStorage.setItem("email", email);
 
-      // Redirigir según rol
-      if (data.role === "admin") navigate("/admin");
-      else if (data.role === "tecnico") navigate("/tecnico");
-      else navigate("/cliente");
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else if (data.role === "tecnico") {
+        navigate("/tecnico");
+      } else {
+        navigate("/cliente");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -45,32 +60,34 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-sm flex flex-col gap-4"
+        className="bg-gray-800 p-8 rounded-lg shadow-lg w-96"
       >
-        <h1 className="text-white text-2xl font-bold text-center">Kelpie</h1>
+        <h2 className="text-2xl font-bold text-white mb-6">Iniciar sesión</h2>
 
-        {error && <p className="text-red-500 text-center">{error}</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
         <input
           type="email"
           placeholder="Correo electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border p-2 rounded bg-gray-700 text-white"
+          className="w-full p-2 mb-4 rounded bg-gray-700 text-white"
           required
         />
+
         <input
           type="password"
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 rounded bg-gray-700 text-white"
+          className="w-full p-2 mb-6 rounded bg-gray-700 text-white"
           required
         />
+
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
         >
           {loading ? "Ingresando..." : "Iniciar sesión"}
         </button>

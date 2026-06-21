@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { ENDPOINTS } from "../config";
 
 export default function DashboardTecnico() {
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(ENDPOINTS.tecnico.tickets, {
+
+    fetch("https://kelpie-q2uc.onrender.com/tickets/asignados", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -15,7 +15,7 @@ export default function DashboardTecnico() {
 
   const cambiarEstado = async (id, nuevoEstado) => {
     const token = localStorage.getItem("token");
-    await fetch(`${ENDPOINTS.tecnico.tickets}/${id}`, {
+    await fetch(`https://kelpie-q2uc.onrender.com/tickets/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -29,23 +29,17 @@ export default function DashboardTecnico() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 text-white">
       <h1 className="text-2xl font-bold mb-4">Panel de Técnico</h1>
       <ul>
         {tickets.map((t) => (
-          <li key={t.id} className="mb-2">
-            {t.title} - {t.status}
-            <button
-              onClick={() => cambiarEstado(t.id, "en proceso")}
-              className="ml-2 bg-yellow-500 text-white px-2 py-1 rounded"
-            >
-              En proceso
-            </button>
+          <li key={t.id} className="mb-4">
+            {t.title} - Estado: {t.status}
             <button
               onClick={() => cambiarEstado(t.id, "resuelto")}
-              className="ml-2 bg-green-500 text-white px-2 py-1 rounded"
+              className="ml-4 bg-green-600 px-2 py-1 rounded"
             >
-              Resuelto
+              Marcar como resuelto
             </button>
           </li>
         ))}
