@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
-from backend.schemas.auth import Token
-from backend.schemas.user import UserLogin, UserCreate, UserRead
+from backend.schemas.user import UserLogin, UserCreate, UserRead, LoginResponse
 from backend.db.database import get_db
 from backend.models.user import User
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,7 +11,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 DBSession = Annotated[Session, Depends(get_db)]
 
 # 🔹 LOGIN
-@router.post("/login", response_model=Token, responses={
+@router.post("/login", response_model=LoginResponse, responses={
     400: {"description": "Credenciales inválidas"}
 })
 def login(user: UserLogin, db: DBSession):
@@ -21,17 +20,17 @@ def login(user: UserLogin, db: DBSession):
         raise HTTPException(status_code=400, detail="Credenciales inválidas")
 
     return {
-        "access_token": "fake-token",   # aquí luego integras JWT real
+        "access_token": "fake-token",   # luego integras JWT real
         "token_type": "bearer",
         "role": db_user.role,
         "first_name": db_user.first_name,
-        "last_name": db_user.last_name
+        "last_name": db_user.last_name,
+        "email": db_user.email
     }
 
 # 🔹 REGISTER
 @router.post("/register", response_model=UserRead)
 def register(user: UserCreate, db: DBSession):
-    # Generar hash de la contraseña antes de guardar
     hashed_password = generate_password_hash(user.password)
 
     new_user = User(

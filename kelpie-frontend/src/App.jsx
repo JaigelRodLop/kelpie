@@ -16,7 +16,6 @@ function App() {
   const token = user?.token;
   const role = user?.role;
 
-  // ✅ Lógica de redirección clara
   let redirectElement;
   if (!token) {
     redirectElement = <Navigate to="/login" />;

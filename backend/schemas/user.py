@@ -14,6 +14,14 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    role: str
+    first_name: str
+    last_name: str
+    email: str
+
 class UserRead(UserBase):
     id: int
     is_active: bool
