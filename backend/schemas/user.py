@@ -8,7 +8,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
-class UserOut(UserBase):
+class UserRead(UserBase):
     id: int
     is_active: bool
     created_at: datetime
