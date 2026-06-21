@@ -4,31 +4,46 @@ from typing import Annotated
 from backend.schemas.auth import Token
 from backend.schemas.user import UserLogin, UserCreate, UserRead
 from backend.db.database import get_db
-from backend.models.user import User  # asegúrate de importar tu modelo
+from backend.models.user import User
+from werkzeug.security import generate_password_hash, check_password_hash
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 DBSession = Annotated[Session, Depends(get_db)]
 
+# 🔹 LOGIN
 @router.post("/login", response_model=Token, responses={
     400: {"description": "Credenciales inválidas"}
 })
 def login(user: UserLogin, db: DBSession):
     db_user = db.query(User).filter(User.email == user.email).first()
-    if not db_user or db_user.hashed_password != user.password:
+    if not db_user or not check_password_hash(db_user.hashed_password, user.password):
         raise HTTPException(status_code=400, detail="Credenciales inválidas")
 
     return {
-        "access_token": "fake-token",
-        "token_type": "bearer"
+        "access_token": "fake-token",   # aquí luego integras JWT real
+        "token_type": "bearer",
+        "role": db_user.role,
+        "first_name": db_user.first_name,
+        "last_name": db_user.last_name
     }
 
+# 🔹 REGISTER
 @router.post("/register", response_model=UserRead)
 def register(user: UserCreate, db: DBSession):
-    # lógica de registro
-    return {
-        "id": 1,
-        "email": user.email,
-        "is_active": True,
-        "created_at": "2026-06-21"
-    }
+    # Generar hash de la contraseña antes de guardar
+    hashed_password = generate_password_hash(user.password)
+
+    new_user = User(
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        role=user.role,
+        hashed_password=hashed_password,
+        is_active=True
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
