@@ -1,4 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext } from "./context/UserContext";
+
 import Login from "./components/Login";
 import DashboardAdmin from "./components/DashboardAdmin";
 import DashboardTecnico from "./components/DashboardTecnico";
@@ -9,9 +12,11 @@ import Footer from "./components/Footer";
 import NotFound from "./components/NotFound";
 
 function App() {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const { user } = useContext(UserContext);
+  const token = user?.token;
+  const role = user?.role;
 
+  // ✅ Lógica de redirección clara
   let redirectElement;
   if (!token) {
     redirectElement = <Navigate to="/login" />;
@@ -19,7 +24,7 @@ function App() {
     redirectElement = <Navigate to="/admin" />;
   } else if (role === "tecnico") {
     redirectElement = <Navigate to="/tecnico" />;
-  } else {
+  } else if (role === "cliente") {
     redirectElement = <Navigate to="/cliente" />;
   }
 
