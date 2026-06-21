@@ -18,7 +18,7 @@ export default function Login() {
     setError(null);
 
     try {
-      const response = await fetch(`${ENDPOINTS.auth.login}`, {
+      const response = await fetch(ENDPOINTS.auth.login, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -28,20 +28,22 @@ export default function Login() {
 
       const data = await response.json();
 
-      setUser({
+      // Guardar usuario en contexto y localStorage
+      const userData = {
         token: data.access_token,
-        role: data.role,
+        role: data.role, // debe coincidir con backend: "admin", "tecnico", "cliente"
         firstName: data.first_name,
         lastName: data.last_name,
         email: email,
-      });
+      };
 
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("role", data.role);
-      localStorage.setItem("firstName", data.first_name);
-      localStorage.setItem("lastName", data.last_name);
-      localStorage.setItem("email", email);
+      setUser(userData);
 
+      Object.entries(userData).forEach(([key, value]) =>
+        localStorage.setItem(key, value)
+      );
+
+      // Redirección según rol
       if (data.role === "admin") {
         navigate("/admin");
       } else if (data.role === "tecnico") {

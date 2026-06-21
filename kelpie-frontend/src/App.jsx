@@ -12,7 +12,6 @@ function App() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
-  // ✅ Extraer la lógica de redirección
   let redirectElement;
   if (!token) {
     redirectElement = <Navigate to="/login" />;
@@ -30,7 +29,7 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            {/* Ruta raíz: usa la variable en vez del ternario */}
+            {/* Ruta raíz */}
             <Route path="/" element={redirectElement} />
 
             {/* Login */}
@@ -39,15 +38,21 @@ function App() {
             {/* Dashboards por rol */}
             <Route
               path="/admin"
-              element={token && role === "admin" ? <DashboardAdmin /> : <Navigate to="/login" />}
+              element={
+                token && role === "admin" ? <DashboardAdmin /> : <Navigate to="/login" />
+              }
             />
             <Route
               path="/tecnico"
-              element={token && role === "tecnico" ? <DashboardTecnico /> : <Navigate to="/login" />}
+              element={
+                token && role === "tecnico" ? <DashboardTecnico /> : <Navigate to="/login" />
+              }
             />
             <Route
               path="/cliente"
-              element={token && role === "usuario" ? <DashboardCliente /> : <Navigate to="/login" />}
+              element={
+                token && role === "cliente" ? <DashboardCliente /> : <Navigate to="/login" />
+              }
             />
 
             {/* Tickets */}
