@@ -1,20 +1,23 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/UserContext";
 
 export default function DashboardTecnico() {
+  const { user } = useContext(UserContext);
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = user?.token;
+    if (!token) return;
 
     fetch("https://kelpie-q2uc.onrender.com/tickets/asignados", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then(setTickets);
-  }, []);
+  }, [user]);
 
   const cambiarEstado = async (id, nuevoEstado) => {
-    const token = localStorage.getItem("token");
+    const token = user?.token;
     await fetch(`https://kelpie-q2uc.onrender.com/tickets/${id}`, {
       method: "PUT",
       headers: {
@@ -30,7 +33,9 @@ export default function DashboardTecnico() {
 
   return (
     <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">Panel de Técnico</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Hola, {user?.firstName} {user?.lastName} (Técnico)
+      </h1>
       <ul>
         {tickets.map((t) => (
           <li key={t.id} className="mb-4">

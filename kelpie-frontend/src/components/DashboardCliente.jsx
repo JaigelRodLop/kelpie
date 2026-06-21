@@ -1,20 +1,24 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/UserContext";
 
 export default function DashboardCliente() {
+  const { user } = useContext(UserContext);
   const [tickets, setTickets] = useState([]);
   const [title, setTitle] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = user?.token;
+    if (!token) return;
+
     fetch("https://kelpie-q2uc.onrender.com/tickets/mios", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then(setTickets);
-  }, []);
+  }, [user]);
 
   const crearTicket = async () => {
-    const token = localStorage.getItem("token");
+    const token = user?.token;
     const res = await fetch("https://kelpie-q2uc.onrender.com/tickets", {
       method: "POST",
       headers: {
@@ -30,7 +34,9 @@ export default function DashboardCliente() {
 
   return (
     <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">Panel de Cliente</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Hola, {user?.firstName} {user?.lastName} (Cliente)
+      </h1>
 
       <div className="mb-6">
         <input

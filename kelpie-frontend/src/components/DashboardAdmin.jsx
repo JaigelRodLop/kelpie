@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/UserContext";
 
 export default function DashboardAdmin() {
+  const { user } = useContext(UserContext);
   const [users, setUsers] = useState([]);
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = user?.token;
+    if (!token) return;
 
     fetch("https://kelpie-q2uc.onrender.com/users", {
       headers: { Authorization: `Bearer ${token}` },
@@ -18,11 +21,13 @@ export default function DashboardAdmin() {
     })
       .then((res) => res.json())
       .then(setTickets);
-  }, []);
+  }, [user]);
 
   return (
     <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">Panel de Administrador</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Hola, {user?.firstName} {user?.lastName} (Admin)
+      </h1>
 
       <h2 className="text-xl mb-2">Usuarios</h2>
       <ul className="mb-6">
