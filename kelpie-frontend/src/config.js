@@ -1,19 +1,26 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL; 
 
 export const ENDPOINTS = {
   auth: {
     login: `${API_URL}/auth/login`,
     register: `${API_URL}/auth/register`,
   },
-  users: {
-    list: `${API_URL}/users`,
+
+  admin: {
+    users: `${API_URL}/admin/users`,       
+    tickets: `${API_URL}/admin/tickets`,   
+    asignar: `${API_URL}/admin/tickets/asignar`, 
   },
-  tickets: {
-    list: `${API_URL}/tickets`,
-    create: `${API_URL}/tickets`,
+
+  tecnico: {
+    tickets: `${API_URL}/tecnico/tickets`, 
+    update: (id) => `${API_URL}/tecnico/tickets/${id}`, 
+    comments: (id) => `${API_URL}/tecnico/tickets/${id}/comments`, 
   },
-  comments: {
-    list: `${API_URL}/comments`,
-    create: `${API_URL}/comments`,
+
+  cliente: {
+    tickets: `${API_URL}/cliente/tickets`, 
+    create: `${API_URL}/cliente/tickets`,  
+    comments: (id) => `${API_URL}/cliente/tickets/${id}/comments`,
   },
 };

@@ -1,13 +1,14 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import datetime
 
 class UserBase(BaseModel):
-    email: EmailStr
+    email: str
+    role: str = "usuario"
 
 class UserCreate(UserBase):
     password: str
 
-class UserRead(UserBase):
+class UserOut(UserBase):
     id: int
     is_active: bool
     created_at: datetime

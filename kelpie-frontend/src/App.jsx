@@ -1,13 +1,28 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
+import DashboardAdmin from "./components/DashboardAdmin";
+import DashboardTecnico from "./components/DashboardTecnico";
+import DashboardCliente from "./components/DashboardCliente";
 import Tickets from "./components/Tickets";
-import Dashboard from "./components/Dashboard";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import NotFound from "./components/NotFound";
 
 function App() {
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  // ✅ Extraer la lógica de redirección
+  let redirectElement;
+  if (!token) {
+    redirectElement = <Navigate to="/login" />;
+  } else if (role === "admin") {
+    redirectElement = <Navigate to="/admin" />;
+  } else if (role === "tecnico") {
+    redirectElement = <Navigate to="/tecnico" />;
+  } else {
+    redirectElement = <Navigate to="/cliente" />;
+  }
 
   return (
     <BrowserRouter>
@@ -15,9 +30,33 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
+            {/* Ruta raíz: usa la variable en vez del ternario */}
+            <Route path="/" element={redirectElement} />
+
+            {/* Login */}
             <Route path="/login" element={<Login />} />
-            <Route path="/tickets" element={token ? <Tickets /> : <Navigate to="/login" />} />
+
+            {/* Dashboards por rol */}
+            <Route
+              path="/admin"
+              element={token && role === "admin" ? <DashboardAdmin /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/tecnico"
+              element={token && role === "tecnico" ? <DashboardTecnico /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/cliente"
+              element={token && role === "usuario" ? <DashboardCliente /> : <Navigate to="/login" />}
+            />
+
+            {/* Tickets */}
+            <Route
+              path="/tickets"
+              element={token ? <Tickets /> : <Navigate to="/login" />}
+            />
+
+            {/* Página no encontrada */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

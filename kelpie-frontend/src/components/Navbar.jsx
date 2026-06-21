@@ -1,13 +1,51 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+  const role = localStorage.getItem("role");
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
   return (
-    <nav className="bg-blue-600 text-white p-4 flex justify-between">
-      <h1 className="font-bold">Kelpie</h1>
+    <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
+      <h1 className="font-bold text-lg">Kelpie</h1>
       <div className="flex gap-4">
-        <Link to="/" className="hover:underline">Dashboard</Link>
-        <Link to="/tickets" className="hover:underline">Tickets</Link>
-        <Link to="/login" className="hover:underline">Login</Link>
+        {!token && <Link to="/login">Login</Link>}
+
+        {token && role === "admin" && (
+          <>
+            <Link to="/admin">Panel Admin</Link>
+            <Link to="/tickets">Tickets</Link>
+          </>
+        )}
+
+        {token && role === "tecnico" && (
+          <>
+            <Link to="/tecnico">Panel Técnico</Link>
+            <Link to="/tickets">Tickets</Link>
+          </>
+        )}
+
+        {token && role === "usuario" && (
+          <>
+            <Link to="/cliente">Panel Cliente</Link>
+            <Link to="/tickets">Mis Tickets</Link>
+          </>
+        )}
+
+        {token && (
+          <button
+            onClick={logout}
+            className="bg-red-500 px-2 py-1 rounded hover:bg-red-600"
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );
