@@ -5,9 +5,9 @@ from backend.routes import auth_router, users_router, tickets_router, comments_r
 app = FastAPI(title="Kelpie API")
 
 # Inicializar BD al arrancar
-@app.on_event("startup")
-def on_startup():
-    init_db()
+@app.get("/")
+def read_root():
+    return {"message": "Kelpie API funcionando 🚀"}
 
 # Incluir routers
 app.include_router(auth_router)
