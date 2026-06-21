@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import ENDPOINTS from "../config";
 
@@ -9,8 +9,13 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { setUser } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
+
+  // ✅ Si ya hay sesión, no mostrar login
+  if (user?.token) {
+    return <Navigate to="/" />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,22 +33,20 @@ export default function Login() {
 
       const data = await response.json();
 
-      // Guardar usuario en contexto y localStorage
       const userData = {
         token: data.access_token,
-        role: data.role, // debe coincidir con backend: "admin", "tecnico", "cliente"
+        role: data.role,
         firstName: data.first_name,
         lastName: data.last_name,
-        email: email,
+        email: data.email,
       };
 
       setUser(userData);
-
       Object.entries(userData).forEach(([key, value]) =>
         localStorage.setItem(key, value)
       );
 
-      // Redirección según rol
+      // ✅ Redirección según rol
       if (data.role === "admin") {
         navigate("/admin");
       } else if (data.role === "tecnico") {
