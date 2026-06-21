@@ -1,48 +1,54 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import PropTypes from "prop-types";
-import { ENDPOINTS } from "../config";
+import ENDPOINTS from "../config";
 import Loader from "./Loader";
+import { UserContext } from "../context/UserContext";
 
 export default function Comments({ ticketId }) {
+  const { user } = useContext(UserContext);
   const [comments, setComments] = useState([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    async function fetchComments() {
+    if (!user?.token || !ticketId) return;
+
+    const fetchComments = async () => {
       setLoading(true);
       try {
-        const res = await fetch(ENDPOINTS.comments.list, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(ENDPOINTS.tecnico.comments(ticketId), {
+          headers: { Authorization: `Bearer ${user.token}` },
         });
         if (!res.ok) throw new Error("Error al obtener comentarios");
         const data = await res.json();
-        setComments(data.filter((c) => c.ticket_id === ticketId));
+        setComments(data);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    }
+    };
+
     fetchComments();
-  }, [ticketId, token]);
+  }, [ticketId, user]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!content.trim()) return;
+
     try {
-      const res = await fetch(ENDPOINTS.comments.create, {
+      const res = await fetch(ENDPOINTS.cliente.comments(ticketId), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${user.token}`,
         },
-        body: JSON.stringify({ content, ticket_id: ticketId }),
+        body: JSON.stringify({ content }),
       });
       if (!res.ok) throw new Error("Error al crear comentario");
       const newComment = await res.json();
-      setComments([...comments, newComment]);
+      setComments((prev) => [...prev, newComment]);
       setContent("");
     } catch (err) {
       setError(err.message);
@@ -58,24 +64,29 @@ export default function Comments({ ticketId }) {
         <Loader />
       ) : (
         <>
-          <form onSubmit={handleCreate} className="flex gap-2 mb-4">
-            <input
-              type="text"
-              placeholder="Escribe un comentario..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="border p-2 flex-1 rounded"
-              required
-            />
-            <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-              Enviar
-            </button>
-          </form>
+          {user?.role === "usuario" && (
+            <form onSubmit={handleCreate} className="flex gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Escribe un comentario..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="border p-2 flex-1 rounded"
+                required
+              />
+              <button
+                type="submit"
+                className="bg-blue-500 text-white p-2 rounded"
+              >
+                Enviar
+              </button>
+            </form>
+          )}
 
           <ul className="space-y-2">
             {comments.map((c) => (
               <li key={c.id} className="border p-2 rounded bg-white">
-                {c.content}
+                <strong>{c.author?.email || "Anónimo"}:</strong> {c.content}
               </li>
             ))}
           </ul>

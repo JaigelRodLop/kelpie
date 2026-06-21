@@ -1,40 +1,43 @@
-import { useEffect, useState } from "react";
-import { ENDPOINTS } from "../config";
+import { useEffect, useState, useContext } from "react";
+import ENDPOINTS from "../config";
+import { UserContext } from "../context/UserContext";
+import Comments from "./Comments";
 
 export default function Tickets() {
+  const { user } = useContext(UserContext);
   const [tickets, setTickets] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
+    if (!user?.token) return;
+
     let url;
-    if (role === "admin") {
+    if (user.role === "admin") {
       url = ENDPOINTS.admin.tickets;
-    } else if (role === "tecnico") {
+    } else if (user.role === "tecnico") {
       url = ENDPOINTS.tecnico.tickets;
     } else {
       url = ENDPOINTS.cliente.tickets;
     }
 
     fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${user.token}` },
     })
       .then((res) => res.json())
       .then(setTickets)
       .catch((err) => console.error(err));
-  }, [role, token]);
+  }, [user]);
 
   const crearTicket = async (e) => {
     e.preventDefault();
-    if (role !== "usuario") return; // solo clientes crean tickets
+    if (user.role !== "usuario") return;
 
-    const res = await fetch(ENDPOINTS.cliente.tickets, {
+    const res = await fetch(ENDPOINTS.cliente.create, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${user.token}`,
       },
       body: JSON.stringify({ title, description }),
     });
@@ -45,13 +48,13 @@ export default function Tickets() {
   };
 
   const cambiarEstado = async (id, nuevoEstado) => {
-    if (role !== "tecnico") return; // solo técnicos cambian estado
+    if (user.role !== "tecnico") return;
 
-    await fetch(`${ENDPOINTS.tecnico.tickets}/${id}`, {
+    await fetch(ENDPOINTS.tecnico.update(id), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${user.token}`,
       },
       body: JSON.stringify({ status: nuevoEstado }),
     });
@@ -65,7 +68,7 @@ export default function Tickets() {
       <h1 className="text-2xl font-bold mb-4">Tickets</h1>
 
       {/* Formulario solo para clientes */}
-      {role === "usuario" && (
+      {user.role === "usuario" && (
         <form onSubmit={crearTicket} className="mb-6 flex flex-col gap-2">
           <input
             type="text"
@@ -88,17 +91,17 @@ export default function Tickets() {
         </form>
       )}
 
-      {/* Lista de tickets */}
+      {/* Lista de tickets con comentarios */}
       <ul>
         {tickets.map((t) => (
-          <li key={t.id} className="mb-2 border p-2 rounded">
+          <li key={t.id} className="mb-4 border p-4 rounded bg-gray-50">
             <strong>{t.title}</strong> — {t.status}
-            {role === "admin" && (
+            {user.role === "admin" && (
               <span className="ml-2 text-sm text-gray-600">
                 Cliente: {t.owner?.email} | Técnico: {t.tecnico?.email}
               </span>
             )}
-            {role === "tecnico" && (
+            {user.role === "tecnico" && (
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={() => cambiarEstado(t.id, "en proceso")}
@@ -114,6 +117,9 @@ export default function Tickets() {
                 </button>
               </div>
             )}
+
+            {/* Aquí se integran los comentarios */}
+            <Comments ticketId={t.id} />
           </li>
         ))}
       </ul>
