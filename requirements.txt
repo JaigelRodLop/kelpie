@@ -8,3 +8,5 @@ passlib[bcrypt]
 bcrypt
 Werkzeug
 pydantic[email]
+python-jose
+email-validator
