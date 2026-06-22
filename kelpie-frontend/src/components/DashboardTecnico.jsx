@@ -23,9 +23,10 @@ export default function DashboardTecnico() {
         });
         if (!res.ok) throw new Error("Error al obtener tickets");
         const data = await res.json();
-        setTickets(data);
+        setTickets(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message);
+        setTickets([]);
       } finally {
         setLoading(false);
       }
@@ -55,7 +56,7 @@ export default function DashboardTecnico() {
     }
   };
 
-  // 🔹 Obtener comentarios de un ticket
+  // 🔹 Obtener comentarios
   const fetchComments = async (ticketId) => {
     try {
       const res = await fetch(ENDPOINTS.tecnico.comments(ticketId), {
@@ -63,13 +64,16 @@ export default function DashboardTecnico() {
       });
       if (!res.ok) throw new Error("Error al obtener comentarios");
       const data = await res.json();
-      setComments((prev) => ({ ...prev, [ticketId]: data }));
+      setComments((prev) => ({
+        ...prev,
+        [ticketId]: Array.isArray(data) ? data : [],
+      }));
     } catch (err) {
       setError(err.message);
     }
   };
 
-  // 🔹 Añadir comentario a un ticket
+  // 🔹 Añadir comentario
   const addComment = async (ticketId) => {
     try {
       const res = await fetch(ENDPOINTS.tecnico.comments(ticketId), {
@@ -92,82 +96,88 @@ export default function DashboardTecnico() {
     }
   };
 
+  let content;
+  if (loading) {
+    content = <Loader />;
+  } else if (tickets.length === 0) {
+    content = <p className="text-gray-400">No tienes tickets asignados.</p>;
+  } else {
+    content = (
+      <ul className="space-y-4">
+        {tickets.map((t) => (
+          <li
+            key={t.id}
+            className="bg-gray-800 text-white p-4 rounded shadow"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-bold">{t.title}</p>
+                <p className="text-sm">Estado: {t.status}</p>
+              </div>
+              <div className="space-x-2">
+                <button
+                  onClick={() => handleStatusChange(t.id, "Pendiente")}
+                  className="bg-yellow-600 px-3 py-1 rounded hover:bg-yellow-700"
+                >
+                  Pendiente
+                </button>
+                <button
+                  onClick={() => handleStatusChange(t.id, "En progreso")}
+                  className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700"
+                >
+                  En progreso
+                </button>
+                <button
+                  onClick={() => handleStatusChange(t.id, "Resuelto")}
+                  className="bg-green-600 px-3 py-1 rounded hover:bg-green-700"
+                >
+                  Resuelto
+                </button>
+              </div>
+            </div>
+
+            {/* 🔹 Comentarios */}
+            <div className="mt-4">
+              <button
+                onClick={() => fetchComments(t.id)}
+                className="text-sm text-blue-400 underline"
+              >
+                Ver comentarios
+              </button>
+              <ul className="mt-2 space-y-2">
+                {(comments[t.id] || []).map((c) => (
+                  <li key={c.id} className="text-sm text-gray-300">
+                    {c.content}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 flex space-x-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Añadir comentario..."
+                  className="flex-1 px-2 py-1 rounded text-black"
+                />
+                <button
+                  onClick={() => addComment(t.id)}
+                  className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700"
+                >
+                  Añadir
+                </button>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Panel Técnico</h1>
-
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      {loading ? (
-        <Loader />
-      ) : (
-        <ul className="space-y-4">
-          {tickets.map((t) => (
-            <li
-              key={t.id}
-              className="bg-gray-800 text-white p-4 rounded shadow"
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-bold">{t.title}</p>
-                  <p className="text-sm">Estado: {t.status}</p>
-                </div>
-                <div className="space-x-2">
-                  <button
-                    onClick={() => handleStatusChange(t.id, "Pendiente")}
-                    className="bg-yellow-600 px-3 py-1 rounded hover:bg-yellow-700"
-                  >
-                    Pendiente
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(t.id, "En progreso")}
-                    className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    En progreso
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(t.id, "Resuelto")}
-                    className="bg-green-600 px-3 py-1 rounded hover:bg-green-700"
-                  >
-                    Resuelto
-                  </button>
-                </div>
-              </div>
-
-              {/* 🔹 Comentarios */}
-              <div className="mt-4">
-                <button
-                  onClick={() => fetchComments(t.id)}
-                  className="text-sm text-blue-400 underline"
-                >
-                  Ver comentarios
-                </button>
-                <ul className="mt-2 space-y-2">
-                  {(comments[t.id] || []).map((c) => (
-                    <li key={c.id} className="text-sm text-gray-300">
-                      {c.content}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-2 flex space-x-2">
-                  <input
-                    type="text"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Añadir comentario..."
-                    className="flex-1 px-2 py-1 rounded text-black"
-                  />
-                  <button
-                    onClick={() => addComment(t.id)}
-                    className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    Añadir
-                  </button>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      {content}
     </div>
   );
 }
