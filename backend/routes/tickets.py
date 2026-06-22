@@ -4,7 +4,8 @@ from typing import Annotated
 from backend.schemas.ticket import TicketCreate, TicketRead, TicketUpdate
 from backend.schemas.comment import CommentCreate, CommentRead
 from backend.db.database import get_db
-from backend.models.ticket import Ticket, User, Comment
+from backend.models.ticket import Ticket, Comment
+from backend.models.user import User
 from backend.dependencies import get_current_user
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
