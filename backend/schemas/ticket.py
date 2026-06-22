@@ -17,3 +17,6 @@ class TicketRead(TicketBase):
 
     class Config:
         orm_mode = True
+
+class TicketUpdate(BaseModel):
+    status: str

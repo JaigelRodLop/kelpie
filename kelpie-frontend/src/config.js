@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL; 
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ENDPOINTS = {
   auth: {
@@ -6,22 +6,22 @@ const ENDPOINTS = {
     register: `${API_URL}/auth/register`,
   },
 
-  admin: {
-    users: `${API_URL}/users`,              // listar todos los usuarios
-    tickets: `${API_URL}/tickets`,          // ver todos los tickets
-    asignar: `${API_URL}/tickets/asignar`,  // asignar tickets a técnicos
+  tickets: {
+    list: `${API_URL}/tickets`,                 // listar todos los tickets
+    create: `${API_URL}/tickets`,               // crear nuevo ticket
+    byId: (id) => `${API_URL}/tickets/${id}`,   // obtener/actualizar ticket por ID
+    assign: `${API_URL}/tickets/asignar`,       // asignar tickets a técnicos (admin)
+    mine: `${API_URL}/tickets/mios`,            // tickets propios del cliente (cuando lo implementes)
+    assigned: `${API_URL}/tickets/asignados`,   // tickets asignados al técnico (cuando lo implementes)
   },
 
-  tecnico: {
-    tickets: `${API_URL}/tickets/asignados`, // tickets asignados al técnico
-    update: (id) => `${API_URL}/tickets/${id}`, // actualizar estado de ticket
-    comments: (id) => `${API_URL}/tickets/${id}/comments`, // añadir comentarios
+  comments: {
+    list: (ticketId) => `${API_URL}/tickets/${ticketId}/comments`,   // obtener comentarios
+    create: (ticketId) => `${API_URL}/tickets/${ticketId}/comments`, // crear comentario
   },
 
-  cliente: {
-    tickets: `${API_URL}/tickets/mios`,     // tickets propios del cliente
-    create: `${API_URL}/tickets`,           // crear nuevo ticket
-    comments: (id) => `${API_URL}/tickets/${id}/comments`, // añadir info extra
+  users: {
+    list: `${API_URL}/users`, // listar todos los usuarios (admin)
   },
 };
 

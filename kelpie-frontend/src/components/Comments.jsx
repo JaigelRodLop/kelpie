@@ -67,7 +67,7 @@ export default function Comments({ ticketId }) {
       ) : (
         <>
           {/* 🔹 Formulario visible para cliente y técnico */}
-          {(user?.role === "usuario" || user?.role === "tecnico") && (
+          {(user?.role === "cliente" || user?.role === "tecnico") && (
             <form onSubmit={handleCreate} className="flex gap-2 mb-4">
               <input
                 type="text"
