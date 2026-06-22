@@ -11,13 +11,14 @@ export default function Comments({ ticketId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 🔹 Obtener comentarios
   useEffect(() => {
     if (!user?.token || !ticketId) return;
 
     const fetchComments = async () => {
       setLoading(true);
       try {
-        const res = await fetch(ENDPOINTS.tecnico.comments(ticketId), {
+        const res = await fetch(ENDPOINTS.comments.list(ticketId), {
           headers: { Authorization: `Bearer ${user.token}` },
         });
         if (!res.ok) throw new Error("Error al obtener comentarios");
@@ -33,12 +34,13 @@ export default function Comments({ ticketId }) {
     fetchComments();
   }, [ticketId, user]);
 
+  // 🔹 Crear comentario
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
 
     try {
-      const res = await fetch(ENDPOINTS.cliente.comments(ticketId), {
+      const res = await fetch(ENDPOINTS.comments.create(ticketId), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +66,8 @@ export default function Comments({ ticketId }) {
         <Loader />
       ) : (
         <>
-          {user?.role === "usuario" && (
+          {/* 🔹 Formulario visible para cliente y técnico */}
+          {(user?.role === "usuario" || user?.role === "tecnico") && (
             <form onSubmit={handleCreate} className="flex gap-2 mb-4">
               <input
                 type="text"
@@ -83,6 +86,7 @@ export default function Comments({ ticketId }) {
             </form>
           )}
 
+          {/* 🔹 Lista de comentarios */}
           <ul className="space-y-2">
             {comments.map((c) => (
               <li key={c.id} className="border p-2 rounded bg-white">
