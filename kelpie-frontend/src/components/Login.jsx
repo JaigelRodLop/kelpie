@@ -12,7 +12,6 @@ export default function Login() {
   const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
-  // ✅ Si ya hay sesión, no mostrar login
   if (user?.token) {
     return <Navigate to="/" />;
   }

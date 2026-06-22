@@ -1,58 +1,34 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
-  const firstName = localStorage.getItem("firstName");
-  const lastName = localStorage.getItem("lastName");
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const logout = () => {
+  const handleLogout = () => {
+    setUser(null);
     localStorage.clear();
-    navigate("/login");
+
+    navigate("/login", { replace: true });
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-      <h1 className="font-bold text-lg">Kelpie</h1>
-      <div className="flex gap-4 items-center">
-        {!token && <Link to="/login">Login</Link>}
-
-        {token && role === "admin" && (
-          <>
-            <Link to="/admin">Panel Admin</Link>
-            <Link to="/tickets">Tickets</Link>
-          </>
-        )}
-
-        {token && role === "tecnico" && (
-          <>
-            <Link to="/tecnico">Panel Técnico</Link>
-            <Link to="/tickets">Tickets</Link>
-          </>
-        )}
-
-        {token && role === "usuario" && (
-          <>
-            <Link to="/cliente">Panel Cliente</Link>
-            <Link to="/tickets">Mis Tickets</Link>
-          </>
-        )}
-
-        {token && (
-          <>
-            <span className="text-sm">
-              Hola, {firstName} {lastName}
-            </span>
-            <button
-              onClick={logout}
-              className="bg-red-500 px-2 py-1 rounded hover:bg-red-600"
-            >
-              Logout
-            </button>
-          </>
-        )}
-      </div>
+    <nav className="bg-gray-800 text-white p-4 flex justify-between">
+      <span className="font-bold">Kelpie</span>
+      {user ? (
+        <div>
+          Hola, {user.firstName} {user.lastName} ({user.role})
+          <button
+            onClick={handleLogout}
+            className="ml-4 bg-red-600 px-3 py-1 rounded hover:bg-red-700"
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      ) : (
+        <span>No autenticado</span>
+      )}
     </nav>
   );
 }
